@@ -23,7 +23,7 @@ A lista vive num único sítio no código e edita-se à mão.
 
 ## Arquitetura
 **Servidor (`server.js`)**
-- A cada 30 s faz um único pedido agrupado ao Yahoo Finance para os 12 tickers.
+- A cada 30 s faz 12 pedidos em paralelo (um por ticker) ao endpoint `v8/finance/chart` do Yahoo Finance. O endpoint agrupado `v7/quote` exige autenticação (verificado em 2026-10-01); o `v8/chart` não, e já traz a série do dia.
 - Guarda o último valor bom por ticker e os pontos do dia para os mini-gráficos.
 - Serve a página estática e `GET /api/quotes` (JSON com preço, variação %, variação absoluta, moeda, estado do mercado, série do dia, marca de "desatualizado").
 
@@ -47,7 +47,7 @@ Arranque: `node server.js`, abrir `localhost:3000`.
 ## Erros
 - Yahoo falha: mantém último valor bom, marca "desatualizado", tenta no ciclo seguinte.
 - Um ticker falha: só esse cartão mostra "sem dados".
-- Erro de limite de pedidos: espera o dobro do tempo antes de repetir.
+- Erro de limite de pedidos (HTTP 429): espera o dobro do tempo antes de repetir (máximo 5 min).
 - Servidor desligado: página mostra "Sem ligação ao servidor" e recupera sozinha.
 - Dados inválidos (vazio/`null`): ignorados, mantém-se o valor anterior.
 
