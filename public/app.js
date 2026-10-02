@@ -1,5 +1,6 @@
 import { ageText } from './format.js';
 import { getQuotes, putWatchlist } from './api.js';
+import { serial } from './latest.js';
 import { render } from './view.js';
 import { initAddDialog, initSettingsDialog } from './panels.js';
 
@@ -37,15 +38,18 @@ function renderStatus() {
   }
 }
 
-async function saveItems(next) {
-  const res = await putWatchlist(next);
+const enqueue = serial();
+
+// As alterações à lista correm uma de cada vez, sempre a partir da lista mais recente.
+const saveItems = (change) => enqueue(async () => {
+  const res = await putWatchlist(change(items));
   items = res.items;
   await refresh();
-}
+});
 
 async function removeItem(symbol) {
   try {
-    await saveItems(items.filter((i) => i.symbol !== symbol));
+    await saveItems((current) => current.filter((i) => i.symbol !== symbol));
   } catch (err) {
     setNotice(`Não foi possível retirar a ação: ${err.message}`);
   }
@@ -74,7 +78,7 @@ async function refresh() {
 const addDialog = initAddDialog({
   getItems: () => items,
   maxItems: MAX_ITEMS,
-  onAdd: (item) => saveItems([...items, item]),
+  onAdd: (item) => saveItems((current) => [...current, item]),
 });
 const settingsDialog = initSettingsDialog({ onSaved: refresh });
 

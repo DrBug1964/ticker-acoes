@@ -32,6 +32,15 @@ export class QuoteStore {
     if (e) e.error = err.message;
   }
 
+  // Fonte atual sem este mercado: descarta o preço antigo (não deve parecer "desatualizado").
+  markUnsupported(symbol, message) {
+    const e = this.entries.get(symbol);
+    if (!e) return;
+    e.data = null;
+    e.updatedAt = null;
+    e.error = message;
+  }
+
   snapshot() {
     return [...this.entries.values()].map((e) => ({
       symbol: e.symbol,

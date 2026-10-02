@@ -11,3 +11,13 @@ export function latestOnly(fn) {
     }
   };
 }
+
+// Executa as tarefas uma de cada vez, pela ordem em que chegam; um erro não bloqueia as seguintes.
+export function serial() {
+  let tail = Promise.resolve();
+  return (task) => {
+    const run = tail.then(task);
+    tail = run.catch(() => {});
+    return run;
+  };
+}

@@ -25,20 +25,24 @@ export function createService({
   let inFlight = false;
   let again = false;
   let timer = null;
+  let partial = false; // o próximo ciclo pode pedir só as ações ainda sem dados
+  let needFull = false; // mas uma troca de fonte obriga a refazer tudo
 
   function persist(next) {
     settings = next;
     saveSettings(settingsFile, settings);
   }
 
-  async function refresh() {
+  async function refresh({ onlyMissing = false } = {}) {
     const current = provider;
     const items = settings.watchlist;
     const supported = new Set(current.markets.map((m) => m.id));
-    const usable = items.filter((i) => supported.has(i.market));
     for (const i of items) {
-      if (!supported.has(i.market)) store.applyError(i.symbol, new Error(UNSUPPORTED));
+      if (!supported.has(i.market)) store.markUnsupported(i.symbol, UNSUPPORTED);
     }
+    const missing = (i) => !store.entries.get(i.symbol)?.data;
+    const usable = items.filter((i) => supported.has(i.market) && (!onlyMissing || missing(i)));
+    if (onlyMissing && usable.length === 0) return { rateLimited: false, notice };
     // só a fonte ainda ativa pode escrever no armazém
     const guarded = {
       applyResult: (s, q) => { if (current === provider) store.applyResult(s, q); },
@@ -46,9 +50,11 @@ export function createService({
     };
     const { rateLimited, failed } = await refreshAll(usable, (s) => current.quote(s), guarded);
     if (current !== provider) return { rateLimited: false, notice };
-    notice = usable.length > 0 && failed.length === usable.length
-      ? store.entries.get(failed[0])?.error ?? null
-      : null;
+    if (!onlyMissing) {
+      notice = usable.length > 0 && failed.length === usable.length
+        ? store.entries.get(failed[0])?.error ?? null
+        : null;
+    }
     return { rateLimited, notice };
   }
 
@@ -57,8 +63,11 @@ export function createService({
     if (inFlight) { again = true; return; }
     inFlight = true;
     clearTimeout(timer);
+    const onlyMissing = partial && !needFull;
+    partial = false;
+    needFull = false;
     try {
-      const out = await refresh();
+      const out = await refresh({ onlyMissing });
       delay = nextDelay(delay, out.rateLimited, provider.refreshMs(settings.watchlist.length));
     } catch (err) {
       console.warn(`falha no ciclo de atualização: ${err.message}`);
@@ -88,6 +97,7 @@ export function createService({
       const valid = validateWatchlist(items);
       persist({ ...settings, watchlist: valid });
       store.setTickers(valid);
+      partial = true;
       tick();
       return valid.map((i) => ({ ...i }));
     },
@@ -100,6 +110,7 @@ export function createService({
       provider = makeProvider(settings.provider, { apiKey: settings.apiKey, fetchImpl });
       delay = provider.refreshMs(settings.watchlist.length);
       notice = null;
+      needFull = true;
       tick();
       return getSettings();
     },

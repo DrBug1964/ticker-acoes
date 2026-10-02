@@ -4,9 +4,11 @@ Aplicação para Mac e Windows que mostra, quase em tempo real, as ações que e
 
 ## Instalar (utilizadores)
 
-1. Descarregue o instalador da última versão em **Releases**: `.dmg` (Mac) ou `.exe` (Windows).
+1. Descarregue o instalador da última versão em **Releases**:
+   - **Mac:** o `.dmg`. Se o Mac tem chip Apple (M1, M2, M3…), escolha o ficheiro com `arm64` no nome; se é um Mac Intel, escolha o outro. Em dúvida: menu Apple → **Acerca deste Mac**.
+   - **Windows:** o `.exe`.
 2. Abra-o e instale. Como a aplicação não está assinada, o sistema mostra um aviso:
-   - **Mac:** clique com o botão direito na aplicação → **Abrir** → **Abrir**. Se disser que está "danificada", abra o Terminal e corra `xattr -cr "/Applications/Ticker Acoes.app"`.
+   - **Mac:** tente abrir a aplicação; quando o Mac a recusar, abra **Definições do Sistema → Privacidade e Segurança**, desça até à mensagem sobre "Ticker Acoes" e clique em **Abrir mesmo assim**. Se disser que a aplicação está "danificada", abra o Terminal e corra `xattr -cr "/Applications/Ticker Acoes.app"` e tente outra vez.
    - **Windows:** **Mais informações** → **Executar mesmo assim**.
 3. Clique em **+ Adicionar ações**, escolha o mercado, pesquise por nome ou símbolo (por exemplo "micron" ou "NVDA") e adicione. Até 30 ações.
 

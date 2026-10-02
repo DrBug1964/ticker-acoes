@@ -156,3 +156,65 @@ test('definições corrompidas no disco: o serviço arranca com a lista vazia', 
   assert.deepEqual(service.getWatchlist(), []);
   assert.equal(readFileSync(`${file}.bak`, 'utf8'), '{lixo');
 });
+
+test('mudar para uma fonte que não suporta o mercado limpa o preço antigo e marca "sem dados nesta fonte"', async () => {
+  const file = tmpSettingsFile();
+  saveSettings(file, {
+    version: 1, provider: 'yahoo', apiKey: '', watchlist: [item('A'), item('B', 'kr')],
+  });
+  const providers = {
+    yahoo: fakeProvider(),
+    finnhub: fakeProvider({ id: 'finnhub', markets: [marketById('us')] }),
+  };
+  const service = createService({ settingsFile: file, makeProvider: (id) => providers[id] });
+  await service.refresh();
+  service.updateSettings({ provider: 'finnhub' });
+  await service.refresh();
+  const quotes = service.quotesPayload().groups.flatMap((g) => g.quotes);
+  const b = quotes.find((q) => q.symbol === 'B');
+  assert.equal(b.hasData, false);
+  assert.equal(b.stale, false);
+  assert.equal(b.error, UNSUPPORTED);
+  assert.equal(quotes.find((q) => q.symbol === 'A').hasData, true);
+});
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+test('adicionar uma ação só pede a nova, não refaz a lista toda', async () => {
+  const asked = [];
+  const { service } = make(
+    { quote: async (s) => { asked.push(s); return quoteOf(); } },
+    { watchlist: [item('A')] },
+  );
+  service.start();
+  try {
+    await wait(40);
+    asked.length = 0;
+    service.setWatchlist([item('A'), item('B')]);
+    await wait(40);
+    assert.deepEqual(asked, ['B']);
+  } finally {
+    service.stop();
+  }
+});
+
+test('retirar uma ação não faz pedidos novos; mudar de fonte refaz a lista toda', async () => {
+  const asked = [];
+  const { service } = make(
+    { quote: async (s) => { asked.push(s); return quoteOf(); } },
+    { watchlist: [item('A'), item('B')] },
+  );
+  service.start();
+  try {
+    await wait(40);
+    asked.length = 0;
+    service.setWatchlist([item('A')]);
+    await wait(40);
+    assert.deepEqual(asked, []);
+    service.updateSettings({ provider: 'finnhub' });
+    await wait(40);
+    assert.deepEqual(asked, ['A']);
+  } finally {
+    service.stop();
+  }
+});
