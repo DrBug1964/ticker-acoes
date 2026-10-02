@@ -1,5 +1,5 @@
 import {
-  formatPrice, formatPct, formatChange, direction, ageText, sparkPoints,
+  formatPrice, formatPct, formatChange, direction, ageText, sparkPoints, stateText,
 } from './format.js';
 
 const REFRESH_MS = 30_000;
@@ -86,7 +86,7 @@ function flash(root, cls) {
   });
 }
 
-function update(quotes) {
+function update(quotes, serverTime) {
   quotes.forEach((q) => {
     document.querySelectorAll(`[data-symbol="${q.symbol}"]`).forEach((root) => {
       root.classList.toggle('stale', q.stale);
@@ -95,16 +95,16 @@ function update(quotes) {
         setText(root, '.px, .price', '—');
         setText(root, '.pct', 'sem dados');
         setText(root, '.chg', '');
-        setText(root, '.state', 'Sem dados');
+        setText(root, '.state', stateText(q, serverTime));
         root.querySelector('polyline')?.setAttribute('points', '');
         return;
       }
       root.dataset.dir = direction(q.changePct);
-      root.dataset.open = String(q.marketOpen);
+      root.dataset.open = String(q.marketOpen && !q.stale);
       setText(root, '.px, .price', formatPrice(q.price, q.currency));
       setText(root, '.pct', formatPct(q.changePct));
       setText(root, '.chg', formatChange(q.change, q.currency));
-      setText(root, '.state', q.marketOpen ? 'Aberto' : 'Fechado');
+      setText(root, '.state', stateText(q, serverTime));
       root.querySelector('polyline')?.setAttribute('points', sparkPoints(q.series, SPARK_W, SPARK_H));
 
       const prev = lastPrice.get(q.symbol);
@@ -147,7 +147,7 @@ async function refresh() {
       build(sectors, quotes);
       built = true;
     }
-    update(quotes);
+    update(quotes, serverTime);
     anyData = quotes.some((q) => q.hasData);
     if (anyData && !marqueeFitted) {
       fitMarquee();

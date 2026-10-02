@@ -48,3 +48,9 @@ export function sparkPoints(series, w, h, pad = 2) {
     })
     .join(' ');
 }
+
+export function stateText(q, now) {
+  if (!q.hasData) return 'Sem dados';
+  if (q.stale) return `Desatualizado ${ageText((now - q.updatedAt) / 1000)}`;
+  return q.marketOpen ? 'Aberto' : 'Fechado';
+}

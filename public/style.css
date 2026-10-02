@@ -95,7 +95,8 @@ h1 { font-size: 20px; margin: 0; }
   border-left: 3px solid var(--accent);
   border-radius: 8px;
 }
-.card.stale { opacity: 0.6; }
+.card.stale, .tick.stale { opacity: 0.55; }
+.card.stale .state { color: var(--warn); }
 .card-head { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); }
 .card-head .name { color: var(--text); font-weight: 600; }
 .price { margin: 0 -4px; padding: 2px 4px; border-radius: 4px; font-family: var(--mono); font-size: 26px; font-weight: 700; }

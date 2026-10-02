@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatPrice, formatPct, formatChange, direction, ageText, sparkPoints,
+  formatPrice, formatPct, formatChange, direction, ageText, sparkPoints, stateText,
 } from '../public/format.js';
 
 // Intl usa espaços não separáveis; normalizamos para comparar.
@@ -53,4 +53,17 @@ test('sparkPoints: série igual dá linha a meio; 0 ou 1 ponto dá vazio', () =>
   assert.equal(sparkPoints([5, 5, 5], 100, 20), '0.0,10.0 50.0,10.0 100.0,10.0');
   assert.equal(sparkPoints([5], 100, 20), '');
   assert.equal(sparkPoints([], 100, 20), '');
+});
+
+test('stateText: desatualizado mostra há quanto tempo, em vez de Aberto', () => {
+  const now = 1_000_000;
+  const stale = { hasData: true, stale: true, marketOpen: true, updatedAt: now - 180_000 };
+  assert.equal(stateText(stale, now), 'Desatualizado há 3 min');
+});
+
+test('stateText: sem dados, aberto e fechado', () => {
+  const now = 1_000_000;
+  assert.equal(stateText({ hasData: false, stale: false }, now), 'Sem dados');
+  assert.equal(stateText({ hasData: true, stale: false, marketOpen: true, updatedAt: now }, now), 'Aberto');
+  assert.equal(stateText({ hasData: true, stale: false, marketOpen: false, updatedAt: now }, now), 'Fechado');
 });
