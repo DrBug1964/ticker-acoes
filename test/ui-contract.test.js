@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const PUBLIC = new URL('../public/', import.meta.url).pathname;
+const PUBLIC = fileURLToPath(new URL('../public/', import.meta.url));
 const html = readFileSync(join(PUBLIC, 'index.html'), 'utf8');
 const htmlIds = new Set([...html.matchAll(/\bid="([\w-]+)"/g)].map((m) => m[1]));
 
