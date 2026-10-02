@@ -36,3 +36,7 @@ Requer Node.js 22.
 ## Publicar uma versão
 
 Crie um repositório no GitHub, envie o código e crie uma etiqueta: `git tag v1.0.0 && git push --tags`. O fluxo em `.github/workflows/release.yml` compila o instalador do Mac e o do Windows e publica-os numa Release.
+
+## Licença
+
+MIT (ver `LICENSE`).
