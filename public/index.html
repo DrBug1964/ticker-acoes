@@ -4,19 +4,76 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ticker de Ações</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="marquee" aria-label="Cotações em movimento">
+  <header class="marquee" id="marquee" aria-label="Cotações em movimento" hidden>
     <div class="marquee-track" id="track"></div>
   </header>
+
   <main>
     <div class="topbar">
       <h1>Ticker de Ações</h1>
-      <div id="status" class="status" data-level="warn">A carregar…</div>
+      <div class="actions">
+        <span id="status" class="status" data-level="warn">A carregar…</span>
+        <button id="add-btn" class="btn primary" type="button">+ Adicionar ações</button>
+        <button id="settings-btn" class="btn" type="button">Definições</button>
+      </div>
     </div>
+
+    <p id="notice" class="notice" role="alert" hidden></p>
+
+    <section id="empty" class="empty" hidden>
+      <h2>Ainda não escolheu nenhuma ação</h2>
+      <p>Pesquise por nome ou símbolo e escolha o mercado.</p>
+      <button id="add-first" class="btn primary" type="button">Adicionar a primeira ação</button>
+    </section>
+
     <div id="grid"></div>
   </main>
+
+  <dialog id="add-dialog" aria-labelledby="add-title">
+    <form method="dialog" class="dlg-head">
+      <h2 id="add-title">Adicionar ações</h2>
+      <button class="btn" value="close" aria-label="Fechar">✕</button>
+    </form>
+    <div class="dlg-body">
+      <label>Mercado
+        <select id="market-select"><option value="all">Todos os mercados</option></select>
+      </label>
+      <label>Pesquisar
+        <input id="search-input" type="search" autocomplete="off"
+               placeholder="Nome ou símbolo (ex.: micron, NVDA)">
+      </label>
+      <p id="search-msg" class="msg" role="status"></p>
+      <ul id="results" class="results"></ul>
+      <p id="limit-msg" class="msg"></p>
+    </div>
+  </dialog>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form method="dialog" class="dlg-head">
+      <h2 id="settings-title">Definições</h2>
+      <button class="btn" value="close" aria-label="Fechar">✕</button>
+    </form>
+    <div class="dlg-body">
+      <fieldset>
+        <legend>Fonte de dados</legend>
+        <div id="provider-options"></div>
+      </fieldset>
+      <label>Chave do Finnhub
+        <input id="key-input" type="password" autocomplete="off" placeholder="Cole aqui a sua chave">
+      </label>
+      <p class="hint">Crie uma conta gratuita em
+        <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io</a>.
+        A chave fica só neste computador. O plano gratuito só cobre ações dos EUA.</p>
+      <p class="warn">O Yahoo Finance é uma fonte não oficial: pode deixar de funcionar e os dados podem ter atraso.</p>
+      <p id="settings-msg" class="msg" role="status"></p>
+      <button id="settings-save" class="btn primary" type="button">Guardar</button>
+    </div>
+  </dialog>
+
   <script type="module" src="/app.js"></script>
 </body>
 </html>
