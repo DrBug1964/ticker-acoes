@@ -1,2 +1,22 @@
 <!doctype html>
-<html lang="pt-PT"><head><meta charset="utf-8"><title>Ticker de Ações</title></head><body>Ticker</body></html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ticker de Ações</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="marquee" aria-label="Cotações em movimento">
+    <div class="marquee-track" id="track"></div>
+  </header>
+  <main>
+    <div class="topbar">
+      <h1>Ticker de Ações</h1>
+      <div id="status" class="status" data-level="warn">A carregar…</div>
+    </div>
+    <div id="grid"></div>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
