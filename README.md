@@ -1,17 +1,36 @@
 # Ticker de Ações
 
-Página local com cotações quase em tempo real (Yahoo Finance, ~30 s, possível atraso conforme a bolsa) de ações farmacêuticas, nucleares, de memória e de tecnologia/espaço.
+Aplicação para Mac e Windows que mostra, quase em tempo real, as ações que escolher: faixa deslizante no topo e cartões com preço, variação e gráfico do dia. Os dados ficam só no seu computador.
 
-## Usar
+## Instalar (utilizadores)
+
+1. Descarregue o instalador da última versão em **Releases**: `.dmg` (Mac) ou `.exe` (Windows).
+2. Abra-o e instale. Como a aplicação não está assinada, o sistema mostra um aviso:
+   - **Mac:** clique com o botão direito na aplicação → **Abrir** → **Abrir**. Se disser que está "danificada", abra o Terminal e corra `xattr -cr "/Applications/Ticker Acoes.app"`.
+   - **Windows:** **Mais informações** → **Executar mesmo assim**.
+3. Clique em **+ Adicionar ações**, escolha o mercado, pesquise por nome ou símbolo (por exemplo "micron" ou "NVDA") e adicione. Até 30 ações.
+
+## Fonte dos dados
+
+- **Yahoo Finance (por defeito, sem chave):** todos os mercados (EUA, Seul, Londres, Frankfurt, Paris, Amesterdão, Lisboa, Tóquio, Hong Kong). **Não é uma fonte oficial:** pode deixar de funcionar sem aviso, os termos do Yahoo não preveem redistribuição e os preços podem ter atraso.
+- **Finnhub (chave própria):** fonte oficial. Crie uma conta gratuita em finnhub.io, copie a chave e cole-a em **Definições**. O plano gratuito só cobre ações dos EUA e não tem gráfico do dia.
+
+Nada é recolhido sobre si: a aplicação só contacta a fonte de dados que escolher.
+
+## Desenvolvimento
 
 ```bash
-npm start            # abre em http://localhost:3000 (PORT=4000 npm start para mudar)
+npm install
 npm test             # testes automáticos (sem rede)
-npm run check:live   # confirma que os 12 símbolos respondem no Yahoo
+npm run check:live   # confirma que a pesquisa e as cotações funcionam no Yahoo
+npm run app          # abre a aplicação Electron
+npm start            # só o servidor, em http://127.0.0.1:3000 (para o browser)
+npm run pack         # gera a aplicação sem instalador, em dist/
+npm run dist         # gera o instalador da plataforma atual, em dist/
 ```
 
-Requer Node.js 22 ou superior. Não há dependências para instalar.
+Requer Node.js 22.
 
-## Mudar as empresas
+## Publicar uma versão
 
-Edite `src/tickers.js` (símbolo, nome e setor) e reinicie o servidor.
+Crie um repositório no GitHub, envie o código e crie uma etiqueta: `git tag v1.0.0 && git push --tags`. O fluxo em `.github/workflows/release.yml` compila o instalador do Mac e o do Windows e publica-os numa Release.

@@ -5,7 +5,46 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "app": "electron .",
     "test": "node --test test/*.test.js",
-    "check:live": "node test/live.check.js"
+    "check:live": "node test/live.check.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "description": "Ticker de ações quase em tempo real",
+  "author": "Ticker de Ações",
+  "main": "electron/main.js",
+  "build": {
+    "appId": "pt.tickeracoes.app",
+    "productName": "Ticker Acoes",
+    "files": [
+      "electron/**",
+      "src/**",
+      "public/**",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.finance"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false
+    }
   }
 }
