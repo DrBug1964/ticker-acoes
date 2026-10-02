@@ -3,27 +3,40 @@ const MAX_DELAY_MS = 300_000;
 export class QuoteStore {
   constructor(tickers, now = () => Date.now()) {
     this.now = now;
-    this.entries = new Map(
-      tickers.map((t) => [t.symbol, { ...t, data: null, updatedAt: null, error: null }]),
-    );
+    this.entries = new Map();
+    this.setTickers(tickers);
+  }
+
+  setTickers(tickers) {
+    const next = new Map();
+    for (const t of tickers) {
+      const prev = this.entries.get(t.symbol);
+      next.set(
+        t.symbol,
+        prev ? { ...prev, ...t } : { ...t, data: null, updatedAt: null, error: null },
+      );
+    }
+    this.entries = next;
   }
 
   applyResult(symbol, quote) {
     const e = this.entries.get(symbol);
+    if (!e) return;
     e.data = quote;
     e.updatedAt = this.now();
     e.error = null;
   }
 
   applyError(symbol, err) {
-    this.entries.get(symbol).error = err.message;
+    const e = this.entries.get(symbol);
+    if (e) e.error = err.message;
   }
 
   snapshot() {
     return [...this.entries.values()].map((e) => ({
       symbol: e.symbol,
       name: e.name,
-      sector: e.sector,
+      market: e.market,
       hasData: e.data !== null,
       stale: e.data !== null && e.error !== null,
       error: e.error,

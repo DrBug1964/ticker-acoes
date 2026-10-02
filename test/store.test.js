@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { QuoteStore, refreshAll, nextDelay } from '../src/store.js';
 
 const tickers = [
-  { symbol: 'A', name: 'Alpha', sector: 'pharma' },
-  { symbol: 'B', name: 'Beta', sector: 'nuclear' },
+  { symbol: 'A', name: 'Alpha', market: 'us' },
+  { symbol: 'B', name: 'Beta', market: 'kr' },
 ];
 const quote = (price) => ({
   price, previousClose: 100, change: price - 100, changePct: price - 100,
@@ -82,4 +82,39 @@ test('nextDelay dobra em limite de pedidos, com teto, e repõe a base', () => {
   assert.equal(nextDelay(60000, true, 30000), 120000);
   assert.equal(nextDelay(240000, true, 30000), 300000);
   assert.equal(nextDelay(120000, false, 30000), 30000);
+});
+
+test('o snapshot traz o mercado da ação', () => {
+  const store = new QuoteStore(tickers);
+  assert.equal(bySymbol(store, 'A').market, 'us');
+  assert.equal(bySymbol(store, 'B').market, 'kr');
+});
+
+test('applyResult e applyError ignoram símbolos desconhecidos (ação já retirada)', () => {
+  const store = new QuoteStore(tickers);
+  assert.doesNotThrow(() => store.applyResult('REMOVIDA', quote(110)));
+  assert.doesNotThrow(() => store.applyError('REMOVIDA', new Error('x')));
+  assert.equal(store.snapshot().length, 2);
+});
+
+test('setTickers mantém valores, descarta removidos e cria novos sem dados', () => {
+  const store = new QuoteStore(tickers);
+  store.applyResult('A', quote(110));
+  store.applyResult('B', quote(120));
+  store.setTickers([
+    { symbol: 'A', name: 'Alpha 2', market: 'us' },
+    { symbol: 'C', name: 'Gamma', market: 'kr' },
+  ]);
+  assert.deepEqual(store.snapshot().map((e) => e.symbol), ['A', 'C']);
+  assert.equal(bySymbol(store, 'A').price, 110);
+  assert.equal(bySymbol(store, 'A').name, 'Alpha 2');
+  assert.equal(bySymbol(store, 'C').hasData, false);
+});
+
+test('um símbolo retirado e voltado a adicionar começa sem dados', () => {
+  const store = new QuoteStore(tickers);
+  store.applyResult('A', quote(110));
+  store.setTickers([tickers[1]]);
+  store.setTickers(tickers);
+  assert.equal(bySymbol(store, 'A').hasData, false);
 });

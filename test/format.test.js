@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatPrice, formatPct, formatChange, direction, ageText, sparkPoints, stateText,
+  formatPrice, formatPct, formatChange, direction, ageText, sparkPoints, stateText, UNSUPPORTED,
 } from '../public/format.js';
 
 // Intl usa espaços não separáveis; normalizamos para comparar.
@@ -66,4 +66,12 @@ test('stateText: sem dados, aberto e fechado', () => {
   assert.equal(stateText({ hasData: false, stale: false }, now), 'Sem dados');
   assert.equal(stateText({ hasData: true, stale: false, marketOpen: true, updatedAt: now }, now), 'Aberto');
   assert.equal(stateText({ hasData: true, stale: false, marketOpen: false, updatedAt: now }, now), 'Fechado');
+});
+
+test('stateText: sem dados nesta fonte', () => {
+  assert.equal(
+    stateText({ hasData: false, stale: false, error: UNSUPPORTED }, 0),
+    'Sem dados nesta fonte',
+  );
+  assert.equal(stateText({ hasData: false, stale: false, error: 'HTTP 500' }, 0), 'Sem dados');
 });

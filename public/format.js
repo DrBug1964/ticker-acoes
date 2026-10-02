@@ -49,8 +49,10 @@ export function sparkPoints(series, w, h, pad = 2) {
     .join(' ');
 }
 
+export const UNSUPPORTED = 'sem dados nesta fonte';
+
 export function stateText(q, now) {
-  if (!q.hasData) return 'Sem dados';
+  if (!q.hasData) return q.error === UNSUPPORTED ? 'Sem dados nesta fonte' : 'Sem dados';
   if (q.stale) return `Desatualizado ${ageText((now - q.updatedAt) / 1000)}`;
   return q.marketOpen ? 'Aberto' : 'Fechado';
 }
