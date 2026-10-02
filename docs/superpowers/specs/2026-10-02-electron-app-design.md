@@ -99,3 +99,10 @@ Trocar de fonte nas Definições refaz a lista de mercados do formulário. Açõ
   - lógica da página que seja testável sem browser (agrupar por mercado, estados de pesquisa).
 - **Verificação com a rede:** `npm run check:live` pesquisa e cota uma amostra de ações em vários mercados no Yahoo; o Finnhub verifica-se com uma chave de teste do utilizador.
 - **À mão (e dito como tal ao fim):** abrir a aplicação instalada em Mac e em Windows, adicionar e retirar ações, mudar de fonte, janela sem lista, aviso do sistema ao abrir.
+
+## Ajustes decididos ao escrever o plano (2026-10-02)
+- **Finnhub e o limite de pedidos:** o plano gratuito permite 60 pedidos por minuto. Por isso o intervalo de atualização com o Finnhub é `max(30 s, (n+1)/50 minutos)` (37,2 s com 30 ações). O Yahoo mantém 30 s.
+- **Finnhub, estado do mercado e gráfico:** "Aberto/Fechado" vem de `/stock/market-status` (um pedido por ciclo, em cache 60 s). A série do dia fica sempre vazia com o Finnhub, porque os candles não estão confirmados no plano gratuito; o cartão omite o gráfico, nunca o simula.
+- **Aviso de fonte:** `/api/quotes` e `/api/settings` devolvem `notice` quando todas as ações da fonte atual falham (por exemplo "chave inválida ou sem permissão"). A página mostra-o numa faixa e nas Definições.
+- **Erro de arranque do servidor interno:** mostra-se numa caixa de diálogo do sistema, não dentro da janela.
+- **Resultados atrasados:** resultados de uma fonte antiga ou de uma ação já retirada, que cheguem depois de a lista ou a fonte mudar, são descartados.
